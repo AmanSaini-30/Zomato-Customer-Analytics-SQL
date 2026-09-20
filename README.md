@@ -1,63 +1,343 @@
- # 🍔 Zomato Customer Analytics - SQL Portfolio Project
+# 🍽️ Zomato SQL Data Analysis Project
 
-## 📌 Project Context
-Zomato is one of India's largest food delivery platforms, connecting millions of customers with restaurants across multiple cities[cite: 1]. Over the last few months, the leadership team observed that despite a growing user base, overall business performance was not improving at the expected rate[cite: 1]. Revenue growth was inconsistent, customer retention was declining, and certain restaurant partners were underperforming[cite: 1].
+## 📌 Project Overview
 
-**Objective:** The goal of this project is to act as a Data Analyst to investigate customer, restaurant, and order data to uncover actionable insights and provide data-driven recommendations to improve growth, customer retention, and operational efficiency[cite: 1].
+This project analyzes **Zomato-style food delivery data using MySQL** to generate meaningful business insights related to customers, restaurants, orders, revenue, coupons, cancellations, refunds, and customer churn.
 
----
-
-## 🗄️ Database Structure
-The project utilizes three main tables designed in a classic star schema[cite: 2]:
-
-*   **`dim_customer`**: Contains customer details including `customer_id`, `city`, and `acquisition_channel`[cite: 2].
-*   **`dim_restaurant`**: Contains restaurant details including `restaurant_id`, `cuisine`, and `avg_rating`[cite: 2].
-*   **`fact_orders`**: Contains transactional data including `order_amount`, `discount_amount`, `payment_mode`, and `order_status` (Delivered / Cancelled / Refunded)[cite: 2].
+The main objective of this project is to use SQL for **data cleaning, data quality validation, business analysis, and KPI generation** to understand business performance and support data-driven decision-making.
 
 ---
 
-## 📊 Key Areas of Analysis & Business Questions Answered
-The SQL scripts in this repository tackle 6 core business categories[cite: 1]:
+## 🎯 Project Objectives
 
-### 1. Revenue Analysis
-*   Calculated total realized revenue and Average Order Value (AOV)[cite: 1, 2].
-*   Evaluated month-over-month revenue trends[cite: 1, 2].
-*   Identified the highest-contributing cities and most popular payment modes[cite: 1, 2].
+The key objectives of this project are:
 
-### 2. Customer Analysis
-*   Identified the Top 20 customers by revenue and performed a Pareto check to see the percentage of total revenue they contribute[cite: 1, 2].
-*   Analyzed customer acquisition channels to find which brings in the highest-value users[cite: 1, 2].
-*   Calculated the percentage of repeat customers versus one-time buyers[cite: 1, 2].
-
-### 3. Restaurant Performance
-*   Ranked top-performing restaurants by revenue and order volume[cite: 1, 2].
-*   Analyzed the correlation between highly-rated restaurants and their revenue generation[cite: 1, 2].
-*   Identified the bottom 5 underperforming restaurants to inform potential partner interventions[cite: 1, 2].
-
-### 4. Coupon & Discount Analysis
-*   Determined the percentage of orders utilizing coupons[cite: 1, 2].
-*   Compared the Average Order Value (AOV) between coupon users and non-users[cite: 1, 2].
-*   Assessed if coupon usage acts as a driver for customer retention (repeat orders)[cite: 1, 2].
-
-### 5. Cancellation & Refund Analysis
-*   Calculated the overall cancellation and refund rates[cite: 1, 2].
-*   Quantified the exact gross revenue lost due to cancellations and refunds[cite: 1, 2].
-*   Identified the top restaurants with the highest cancellation rates[cite: 1, 2].
-
-### 6. Customer Churn Analysis
-*   Defined and calculated the customer churn rate (using a 90-day inactivity threshold)[cite: 2].
-*   Identified which cities experience the highest churn[cite: 1, 2].
-*   Calculated the total historical revenue associated with churned customers[cite: 1, 2].
-*   Pinpointed the Top 20 high-value customers who have churned for targeted re-engagement campaigns[cite: 1, 2].
+* Analyze overall revenue and order performance
+* Identify top-performing restaurants and cities
+* Analyze customer purchasing behavior
+* Understand customer acquisition channels
+* Identify repeat customers
+* Analyze popular cuisines
+* Compare restaurant ratings with revenue
+* Analyze coupon usage and its impact on AOV
+* Calculate cancellation and refund rates
+* Identify revenue lost due to cancellations
+* Analyze customer churn
+* Identify high-value churned customers
+* Perform data quality checks using SQL
 
 ---
 
-## 🛠️ SQL Techniques Showcased
-This project demonstrates proficiency in advanced SQL concepts, including:
-*   **Joins:** `INNER JOIN`, `LEFT JOIN`[cite: 2].
-*   **Aggregations:** `SUM()`, `AVG()`, `COUNT()`, `COUNT(DISTINCT)`[cite: 2].
-*   **Common Table Expressions (CTEs):** Used extensively to break down complex queries (e.g., isolating customer order histories before joining with main tables)[cite: 2].
-*   **Window Functions:** `ROW_NUMBER() OVER()` for ranking customers[cite: 2].
-*   **Conditional Aggregation:** `SUM(CASE WHEN...)` for pivoting and flagging data[cite: 2].
-*   **Date & Time Functions:** `DATE_FORMAT()`, `INTERVAL` calculations for churn logic[cite: 2].
+## 🗂️ Database Schema
 
+The project contains three main tables:
+
+### 1. Customers
+
+Contains customer information.
+
+| Column                | Description                 |
+| --------------------- | --------------------------- |
+| `customer_id`         | Unique customer ID          |
+| `customer_name`       | Customer name               |
+| `city`                | Customer city               |
+| `signup_time`         | Customer signup date        |
+| `acquisition_channel` | Customer acquisition source |
+
+### 2. Restaurants
+
+Contains restaurant information.
+
+| Column            | Description               |
+| ----------------- | ------------------------- |
+| `restaurant_id`   | Unique restaurant ID      |
+| `restaurant_name` | Restaurant name           |
+| `cuisine`         | Type of cuisine           |
+| `city`            | Restaurant city           |
+| `avg_rating`      | Average restaurant rating |
+
+### 3. Orders
+
+Contains order transaction information.
+
+| Column            | Description          |
+| ----------------- | -------------------- |
+| `order_id`        | Unique order ID      |
+| `customer_id`     | Customer reference   |
+| `restaurant_id`   | Restaurant reference |
+| `order_timestamp` | Order date           |
+| `order_amount`    | Order value          |
+| `discount_amount` | Discount amount      |
+| `delivery_fee`    | Delivery fee         |
+| `payment_mode`    | Payment method       |
+| `order_status`    | Order status         |
+
+---
+
+## 🔗 Table Relationships
+
+```text
+Customers
+   │
+   │ customer_id
+   ▼
+Orders
+   │
+   │ restaurant_id
+   ▼
+Restaurants
+```
+
+* `Customers.customer_id` → `Orders.customer_id`
+* `Restaurants.restaurant_id` → `Orders.restaurant_id`
+
+Foreign keys are used to maintain relationships between the tables.
+
+---
+
+## 🧹 Data Quality Checks
+
+Before performing analysis, several data quality checks were performed:
+
+* Duplicate order IDs
+* Duplicate customer IDs
+* Duplicate restaurant IDs
+* NULL values
+* Invalid negative amounts
+* Order status validation
+
+Example:
+
+```sql
+SELECT order_id, COUNT(*) AS cnt
+FROM Orders
+GROUP BY order_id
+HAVING COUNT(*) > 1;
+```
+
+This helps identify duplicate orders.
+
+---
+
+# 📊 Business Analysis
+
+## 💰 1. Revenue Analysis
+
+The project analyzes:
+
+* Total revenue
+* Monthly revenue
+* Revenue by city
+* Revenue by payment mode
+* Average Order Value (AOV)
+* Monthly orders and AOV
+
+Example KPI:
+
+```text
+Total Revenue
+Monthly Revenue
+Average Order Value
+Revenue by City
+Revenue by Payment Mode
+```
+
+---
+
+## 👥 2. Customer Analysis
+
+Customer-level analysis includes:
+
+* Top 20 customers by revenue
+* Revenue contribution from top customers
+* Customer acquisition channels
+* Revenue per customer
+* Repeat customers
+
+Example:
+
+```sql
+SELECT
+    c.customer_id,
+    c.customer_name,
+    c.city,
+    SUM(o.order_amount) AS total_revenue
+FROM Orders o
+JOIN Customers c
+    ON o.customer_id = c.customer_id
+WHERE o.order_status = 'Delivered'
+GROUP BY
+    c.customer_id,
+    c.customer_name,
+    c.city
+ORDER BY total_revenue DESC
+LIMIT 20;
+```
+
+---
+
+## 🏪 3. Restaurant Analysis
+
+The project identifies:
+
+* Top restaurants by revenue
+* Top restaurants by number of orders
+* Popular cuisines
+* Restaurant performance by city
+* Revenue performance by rating range
+* Restaurants with lower revenue
+
+---
+
+## 🎟️ 4. Coupon Analysis
+
+Coupon-related analysis includes:
+
+* Coupon usage percentage
+* Coupon users vs non-coupon users
+* AOV comparison
+* Revenue comparison
+* City with the highest coupon usage
+* Customer retention comparison
+
+Example:
+
+```text
+Coupon Users
+        vs
+Non-Coupon Users
+```
+
+This analysis helps understand customer behavior associated with discounts.
+
+---
+
+## ❌ 5. Cancellation & Refund Analysis
+
+The project calculates:
+
+* Cancellation rate
+* Refund rate
+* Revenue associated with cancellations
+* Restaurants with high cancellation rates
+
+Example KPI:
+
+```text
+Cancellation Rate %
+Refund Rate %
+Lost Revenue from Cancellations
+```
+
+---
+
+## 🔄 6. Customer Churn Analysis
+
+Customer churn analysis includes:
+
+* Number of churned customers
+* Churn rate
+* City with the highest churn
+* Revenue lost due to churn
+* High-value churned customers
+
+A customer is considered churned based on the project's **90-day inactivity definition**.
+
+---
+
+# 🛠️ SQL Skills Demonstrated
+
+This project demonstrates practical SQL skills including:
+
+* `CREATE DATABASE`
+* `CREATE TABLE`
+* Primary Keys
+* Foreign Keys
+* `SELECT`
+* `WHERE`
+* `GROUP BY`
+* `HAVING`
+* `ORDER BY`
+* `LIMIT`
+* `JOIN`
+* `LEFT JOIN`
+* Subqueries
+* Derived tables
+* `CASE WHEN`
+* Aggregate functions
+
+  * `SUM()`
+  * `COUNT()`
+  * `AVG()`
+  * `ROUND()`
+* Date functions
+
+  * `DATE_FORMAT()`
+  * `DATE_SUB()`
+* Data quality checks
+* KPI calculations
+* Business analysis
+
+---
+
+# 📈 Key Business KPIs
+
+The project calculates several important KPIs:
+
+| KPI               | Purpose                      |
+| ----------------- | ---------------------------- |
+| Total Revenue     | Measures overall sales       |
+| Monthly Revenue   | Tracks revenue trends        |
+| Total Orders      | Measures order volume        |
+| AOV               | Measures average order value |
+| Repeat Customers  | Measures customer engagement |
+| Coupon Usage %    | Measures discount adoption   |
+| Cancellation Rate | Measures order cancellations |
+| Refund Rate       | Measures refunded orders     |
+| Churn Rate        | Measures customer inactivity |
+| Revenue Lost      | Estimates revenue impact     |
+
+---
+
+ 
+# 📁 Project Files
+
+```text
+Zomato-SQL-Analytics/
+│
+├── SQL Project Zomato.sql
+└── README.md
+```
+
+# 🎓 What I Learned
+
+Through this project, I developed practical experience in:
+
+* Writing SQL queries for business problems
+* Working with relational databases
+* Joining multiple tables
+* Performing data quality checks
+* Creating business KPIs
+* Analyzing customer behavior
+* Revenue and restaurant performance analysis
+* Customer churn analysis
+* Translating business questions into SQL queries
+
+---
+
+ 
+## ⭐ Project Highlights
+
+**Domain:** Food Delivery / E-commerce Analytics
+**Database:** MySQL
+**Project Type:** SQL Data Analysis
+**Focus Areas:** Revenue, Customers, Restaurants, Coupons, Cancellations, Refunds & Churn
+
+---
+
+## 📌 Author
+
+**Aman Saini**
+
+*Aspiring Data Analyst*
+ 
